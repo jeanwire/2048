@@ -56,10 +56,10 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: [[null, 2, null, null],
+      squares: [[null, null, null, null],
                 Array(4).fill(null),
                 Array(4).fill(null),
-                Array(4).fill(null)]
+                [null, null, null, 2]]
     };
 
     ArrowKeysReact.config({
@@ -81,6 +81,10 @@ class Game extends React.Component {
       for (let i = 0; i < 4; i++) {
         const thisRow = squares[i].filter(val => val);
         for (let j = 0; j < thisRow.length; j++) {
+          // if something moved while generating thisRow, it will end up in a different place than originally
+          // so, a new number should be generated
+          if (thisRow[j] !== squares[i][j]) {changed = true};
+
           if (checkMe) {
             let openSq = newSq[i].indexOf(null);
             // if the squares need to be summed, the next square doesn't need to be checked again
@@ -102,6 +106,8 @@ class Game extends React.Component {
       for (let i = 0; i < 4; i++) {
         const thisRow = squares[i].filter(val => val);
         for (let j = thisRow.length - 1; j >= 0; j--) {
+          if (thisRow[j] !== squares[i][Math.abs(3 - j)]) {changed = true};
+
           if (checkMe) {
             let openSq = newSq[i].lastIndexOf(null);
             if (thisRow[j - 1] === thisRow[j]) {
@@ -126,6 +132,8 @@ class Game extends React.Component {
         }
 
         for (let i = 0; i < thisCol.length; i++) {
+          if (thisCol[i] !== squares[i][j]) {changed = true};
+
           if (checkMe) {
             let openSq;
             // find the open squares
@@ -158,6 +166,8 @@ class Game extends React.Component {
         }
 
         for (let i = thisCol.length - 1; i >= 0; i--) {
+          if (thisCol[i] !== squares[Math.abs(3 - i)][j]) {changed = true};
+
           if (checkMe) {
             let openSq;
             // find the open squares
@@ -184,9 +194,9 @@ class Game extends React.Component {
       }
     }
 
-    // if (changed) {
+    if (changed) {
       newSq = addRando(newSq);
-    // }
+    }
 
     this.setState({
       squares: newSq

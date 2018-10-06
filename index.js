@@ -184,9 +184,9 @@ class Game extends React.Component {
       }
     }
 
-    if (changed) {
+    // if (changed) {
       newSq = addRando(newSq);
-    }
+    // }
 
     this.setState({
       squares: newSq

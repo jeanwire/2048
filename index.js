@@ -20,33 +20,25 @@ class Board extends React.Component {
     );
   }
 
+  buildBoard = () => {
+    let board = [];
+
+    for (let i = 0; i < 4; i++) {
+      let children = [];
+      for (let j = 0; j < 4; j++) {
+        children.push(this.renderSquare(i, j));
+      }
+      board.push(<div className="board-row">
+                  {children}
+                  </div>)
+    }
+    return board;
+  }
+
   render() {
     return (
       <div>
-        <div className="board-row">
-          {this.renderSquare(0, 0)}
-          {this.renderSquare(0, 1)}
-          {this.renderSquare(0, 2)}
-          {this.renderSquare(0, 3)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(1, 0)}
-          {this.renderSquare(1, 1)}
-          {this.renderSquare(1, 2)}
-          {this.renderSquare(1, 3)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(2, 0)}
-          {this.renderSquare(2, 1)}
-          {this.renderSquare(2, 2)}
-          {this.renderSquare(2, 3)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3, 0)}
-          {this.renderSquare(3, 1)}
-          {this.renderSquare(3, 2)}
-          {this.renderSquare(3, 3)}
-        </div>
+        {this.buildBoard()}
       </div>
     );
   }
@@ -233,6 +225,6 @@ function addRando(squares) {
 
   let choice = options[Math.floor(Math.random() * Math.floor(options.length))];
   let whichVal = Math.random();
-  squares[choice[0]][choice[1]] = whichVal < 0.5 ? 2 : 4;
+  squares[choice[0]][choice[1]] = whichVal < 0.6 ? 2 : 4;
   return squares;
 }

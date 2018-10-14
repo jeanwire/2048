@@ -48,11 +48,15 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: [[null, null, null, null],
+      squares: [Array(4).fill(null),
                 Array(4).fill(null),
                 Array(4).fill(null),
-                [null, null, null, 2]]
+                [null, 2, null, null]],
+      won: false,
+      lost: false
     };
+
+    this.addRando = this.addRando.bind(this);
 
     ArrowKeysReact.config({
       left: () => {this.handleClick('left')},
@@ -187,7 +191,7 @@ class Game extends React.Component {
     }
 
     if (changed) {
-      newSq = addRando(newSq);
+      this.addRando(newSq);
     }
 
     this.setState({
@@ -195,13 +199,46 @@ class Game extends React.Component {
     });
   }
 
+  addRando(squares) {
+    let options = [];
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (!squares[i][j]) {
+          options.push([i, j]);
+        }
+        if (squares[i][j] >= 2048) {
+          this.setState({
+            won: true
+          })
+        }
+      }
+    };
+
+    if (options.length > 0) {
+      let choice = options[Math.floor(Math.random() * Math.floor(options.length))];
+      let whichVal = Math.random();
+      squares[choice[0]][choice[1]] = whichVal < 0.75 ? 2 : 4;
+    }
+    return squares;
+  }
+
   render() {
+
+    let status;
+
+    if (this.state.won) {
+      status = "You won!"
+    }
+
     return (
       <div className="game">
         <div className="game-board" {...ArrowKeysReact.events} tabIndex="1">
           <Board
             squares={this.state.squares}
           />
+        </div>
+        <div className="game-info">
+          <div>{status}</div>
         </div>
       </div>
     );
@@ -212,19 +249,3 @@ ReactDOM.render(
   <Game />,
   document.getElementById('root')
 );
-
-function addRando(squares) {
-  let options = [];
-  for (let i = 0; i < 4; i++) {
-    for (let j = 0; j < 4; j++) {
-      if (!squares[i][j]) {
-        options.push([i, j]);
-      }
-    }
-  };
-
-  let choice = options[Math.floor(Math.random() * Math.floor(options.length))];
-  let whichVal = Math.random();
-  squares[choice[0]][choice[1]] = whichVal < 0.6 ? 2 : 4;
-  return squares;
-}

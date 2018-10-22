@@ -48,15 +48,13 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: [Array(4).fill(null),
+      squares: [[2, null, null, null],
                 Array(4).fill(null),
                 Array(4).fill(null),
-                [null, 2, null, null]],
+                [null, null, null, null]],
       won: false,
       lost: false
     };
-
-    this.addRando = this.addRando.bind(this);
 
     ArrowKeysReact.config({
       left: () => {this.handleClick('left')},
@@ -70,123 +68,54 @@ class Game extends React.Component {
     let squares = this.state.squares.slice(0);
     let newSq = [Array(4).fill(null), Array(4).fill(null),Array(4).fill(null),
                  Array(4).fill(null)];
-    let checkMe = true;
+    let checkThisNum = true;
     let changed = false;
 
     if (direc === 'left') {
       for (let i = 0; i < 4; i++) {
-        const thisRow = squares[i].filter(val => val);
-        for (let j = 0; j < thisRow.length; j++) {
-          // if something moved while generating thisRow, it will end up in a different place than originally
-          // so, a new number should be generated
-          if (thisRow[j] !== squares[i][j]) {changed = true};
-
-          if (checkMe) {
-            let openSq = newSq[i].indexOf(null);
-            // if the squares need to be summed, the next square doesn't need to be checked again
-            if (thisRow[j + 1] === thisRow[j]) {
-              newSq[i][openSq] = 2 * thisRow[j];
-              checkMe = !checkMe;
-              // if squares were summed, something has changed -> new number added
-              changed = true;
-            } else {
-              newSq[i][openSq] = thisRow[j];
-            }
-          } else {
-            // if it wasn't checked because the square was already summed, the next square does need to be checked
-            checkMe = !checkMe;
-          }
-        }
+        // need to change this as object is being returned
+        let temp = this.parseRow(squares[i]);
+        let {row: tempRow, changed: tempChanged} = temp;
+        newSq[i] = tempRow;
+        if (!changed) {changed = tempChanged};
       }
     } else if (direc === 'right') {
       for (let i = 0; i < 4; i++) {
-        const thisRow = squares[i].filter(val => val);
-        for (let j = thisRow.length - 1; j >= 0; j--) {
-          if (thisRow[j] !== squares[i][Math.abs(3 - j)]) {changed = true};
-
-          if (checkMe) {
-            let openSq = newSq[i].lastIndexOf(null);
-            if (thisRow[j - 1] === thisRow[j]) {
-              newSq[i][openSq] = 2 * thisRow[j];
-              checkMe = !checkMe;
-              changed = true;
-            } else {
-              newSq[i][openSq] = thisRow[j];
-            }
-          } else if (!checkMe) {
-            checkMe = !checkMe;
-          }
-        }
+        let temp = this.parseRow(squares[i].reverse());
+        let {row: tempRow, changed: tempChanged} = temp;
+        newSq[i] = tempRow.reverse();
+        if (!changed) {changed = tempChanged};
       }
     } else if (direc === 'up') {
       for (let j = 0; j < 4; j++) {
 
         // build thisCol
         let thisCol = [];
-        for (let row = 0; row < 4; row++) {
-          if (squares[row][j]) {thisCol.push(squares[row][j])}
+        for (let i = 0; i < 4; i++) {
+          thisCol.push(squares[i][j]);
         }
 
-        for (let i = 0; i < thisCol.length; i++) {
-          if (thisCol[i] !== squares[i][j]) {changed = true};
-
-          if (checkMe) {
-            let openSq;
-            // find the open squares
-            for (let k = 3; k >= 0; k--) {
-              if (!newSq[k][j]) {openSq = k;}
-            }
-            // otherwise tries to read squares[4][j] which throws error
-            if (thisCol[i + 1]) {
-              if (thisCol[i + 1] === thisCol[i]) {
-                newSq[openSq][j] = 2 * thisCol[i];
-                checkMe = !checkMe;
-                changed = true;
-              } else {
-                newSq[openSq][j] = thisCol[i];
-              }
-            } else {
-              newSq[openSq][j] = thisCol[i];
-            }
-          } else {
-            checkMe = !checkMe;
-          }
+        let temp = this.parseRow(thisCol);
+        let {row: tempCol, changed: tempChanged} = temp;
+        for (let i = 0; i < 4; i++) {
+          newSq[i][j] = tempCol[i];
         }
+        if (!changed) {changed = tempChanged};
       }
     } else if (direc === 'down') {
       for (let j = 0; j < 4; j++) {
 
         let thisCol = [];
-        for (let row = 0; row < 4; row++) {
-          if (squares[row][j]) {thisCol.push(squares[row][j])}
+        for (let i = 3; i >= 0; i--) {
+          thisCol.push(squares[i][j]);
         }
 
-        for (let i = thisCol.length - 1; i >= 0; i--) {
-          if (thisCol[i] !== squares[Math.abs(3 - i)][j]) {changed = true};
-
-          if (checkMe) {
-            let openSq;
-            // find the open squares
-            for (let k = 0; k < 4; k++) {
-              if (!newSq[k][j]) {openSq = k;}
-            }
-
-            if (thisCol[i - 1]) {
-              if (thisCol[i - 1] === thisCol[i]) {
-                newSq[openSq][j] = 2 * thisCol[i];
-                checkMe = !checkMe;
-                changed = true;
-              }
-              else {
-                newSq[openSq][j] = thisCol[i];
-              }
-            } else {
-              newSq[openSq][j] = thisCol[i];
-            }
-          } else if (!checkMe) {
-            checkMe = !checkMe;
-          }
+        let temp = this.parseRow(thisCol);
+        let {row: tempCol, changed: tempChanged} = temp;
+        for (let i = 3; i >= 0; i--) {
+          newSq[i][j] = tempCol[3 - i];
         }
+        if (!changed) {changed = tempChanged};
       }
     }
 
@@ -199,12 +128,39 @@ class Game extends React.Component {
     });
   }
 
-  addRando(squares) {
-    let options = [];
+  parseRow = (row) => {
+
+    let thisRow = row.filter(val => val);
+    let newRow = Array(4).fill(null);
+    let emptySq = 0;
+    let changed = false;
+    let checkThisNum = true;
+
+    for (let i = 0; i < thisRow.length; i++) {
+      if (thisRow[i] !== row[i]) {changed = true};
+
+      if (checkThisNum) {
+        if (thisRow[i + 1] === thisRow[i]) {
+          newRow[emptySq] = 2 * thisRow[i];
+          emptySq++;
+          checkThisNum = !checkThisNum;
+          changed = true;
+        } else {
+          newRow[emptySq] = thisRow[i];
+          emptySq++;
+        }
+      } else {checkThisNum = !checkThisNum;}
+    }
+
+    return {row: newRow, changed: changed};
+  }
+
+  addRando = (squares) => {
+    let emptySq = [];
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
         if (!squares[i][j]) {
-          options.push([i, j]);
+          emptySq.push([i, j]);
         }
         if (squares[i][j] >= 2048) {
           this.setState({
@@ -214,8 +170,8 @@ class Game extends React.Component {
       }
     };
 
-    if (options.length > 0) {
-      let choice = options[Math.floor(Math.random() * Math.floor(options.length))];
+    if (emptySq.length > 0) {
+      let choice = emptySq[Math.floor(Math.random() * Math.floor(emptySq.length))];
       let whichVal = Math.random();
       squares[choice[0]][choice[1]] = whichVal < 0.75 ? 2 : 4;
     }
@@ -223,13 +179,6 @@ class Game extends React.Component {
   }
 
   render() {
-
-    let status;
-
-    if (this.state.won) {
-      status = "You won!"
-    }
-
     return (
       <div className="game">
         <div className="game-board" {...ArrowKeysReact.events} tabIndex="1">
@@ -238,7 +187,7 @@ class Game extends React.Component {
           />
         </div>
         <div className="game-info">
-          <div>{status}</div>
+          <div>{this.state.won ? "You won!" : ''}</div>
         </div>
       </div>
     );
